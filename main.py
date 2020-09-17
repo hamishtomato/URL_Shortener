@@ -1,3 +1,4 @@
+import re
 import hashlib
 import base62
 from fastapi import Depends, FastAPI, HTTPException
@@ -8,9 +9,9 @@ from database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
 def short(url):
-    a = hashlib.md5()
-    a.update(url.encode("utf8"))
-    return base62.encodebytes(a.digest()[-5:])
+    hash = hashlib.md5()
+    hash.update(url.encode("utf8"))
+    return base62.encodebytes(hash.digest()[-6:])
 
 app = FastAPI()
 
@@ -23,12 +24,15 @@ def get_db():
         db.close()
 
 @app.post("/urls/register")
-async def register_url(url: schemas.UrlCreate, db: Session = Depends(get_db)):
-    row = crud.get_short_url(db, origin_url=url.url)
+async def register_url(body: schemas.UrlCreate, db: Session = Depends(get_db)):
+    if not re.match(r'^https?:/{2}\w.+$', body.url):
+        raise HTTPException(status_code=400, detail="URL is invalid")
+
+    row = crud.get_short_url(db, origin_url=body.url)
     if row:
         return row.short_url
-    short_url = short(url.url)
-    create_url = crud.create_url(short_url=short_url, origin_url=url.url, db=db)
+    short_url = short(body.url)
+    create_url = crud.create_url(short_url=short_url, origin_url=body.url, db=db)
     return create_url.short_url
 
 @app.get("/{short_url}")
