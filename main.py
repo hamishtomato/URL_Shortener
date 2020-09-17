@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
 import crud, models, schemas
 from database import SessionLocal, engine
@@ -43,4 +44,5 @@ async def register_url(request: Request, body: schemas.UrlCreate, db: Session = 
 @app.get("/{short_url}")
 def read_users(short_url, db: Session = Depends(get_db)):
     urls = crud.get_origin_url(db, short_url=short_url)
-    return urls.origin_url
+    response = RedirectResponse(url=urls.origin_url)
+    return response
