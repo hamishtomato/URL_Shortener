@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
-class Url(BaseModel):
-    short_url : str
-    origin_url : str
-    class Config:
-        orm_mode = True
+# class Url(BaseModel):
+#     short_url : HttpUrl
+#     origin_url : HttpUrl
+#     class Config:
+#         orm_mode = True
 
 class UrlCreate(BaseModel):
-    url : str
+    url : HttpUrl

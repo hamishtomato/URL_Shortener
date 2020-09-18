@@ -1,4 +1,3 @@
-import re
 import hashlib
 from urllib.parse import urlparse
 from fastapi import Depends, FastAPI, HTTPException
@@ -8,14 +7,8 @@ from starlette.responses import RedirectResponse
 
 import crud, models, schemas
 from database import SessionLocal, engine
+
 models.Base.metadata.create_all(bind=engine)
-
-def encode_url(url):
-    md5 = hashlib.md5()
-    md5.update(url.encode("utf8"))
-    return md5.hexdigest()[:10]
-
-
 app = FastAPI()
 
 # Dependency
@@ -26,23 +19,27 @@ def get_db():
     finally:
         db.close()
 
+def encode_url(url):
+    md5 = hashlib.md5()
+    md5.update(url.encode("utf8"))
+    return md5.hexdigest()[:10]
+
 @app.post("/urls/register")
 async def register_url(request: Request, body: schemas.UrlCreate, db: Session = Depends(get_db)):
-    if not re.match(r'^https?:/{2}\w.+$', body.url):
-        raise HTTPException(status_code=400, detail="URL is invalid")
-
-    row = crud.get_short_url(db, origin_url=body.url)
-    if row:
-        return row.short_url
-
-    short_url_path = encode_url(body.url)
     url_parse = urlparse(str(request.url))
-    crud.create_url(short_url=short_url_path, origin_url=body.url, db=db)
+    row = crud.get_short_path(db, full_url=body.url)
+    if row:
+        clicks = crud.update_click(full_url=body.url, db=db)
+        short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , row.short_path)
+        return {"short_url": short_url, "clicks": clicks}
+    short_url_path = encode_url(body.url)
+    row = crud.create_url(short_path=short_url_path, full_url=body.url, db=db)
     short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , short_url_path)
-    return short_url
+    return {"short_url": short_url, "clicks": row.clicks}
 
-@app.get("/{short_url}")
-def read_users(short_url, db: Session = Depends(get_db)):
-    urls = crud.get_origin_url(db, short_url=short_url)
-    response = RedirectResponse(url=urls.origin_url)
+@app.get("/{short_path}")
+def read_users(short_path, db: Session = Depends(get_db)):
+    urls = crud.get_full_url(db, short_path=short_path)
+    response = RedirectResponse(url=urls.full_url)
+
     return response
