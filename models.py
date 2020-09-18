@@ -1,7 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
-from sqlalchemy.orm import relationship
-from database import Base
 from datetime import datetime
+from sqlalchemy import  Column, Integer, String, DateTime
+
+from database import Base
 
 
 class Url(Base):
@@ -9,6 +9,6 @@ class Url(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     short_path = Column(String, unique=True, index=True)
-    full_url = Column(String, unique=True)
+    full_url = Column(String, unique=True, index=True)
     clicks = Column(Integer)
     created_at = Column(DateTime, default=datetime.utcnow)

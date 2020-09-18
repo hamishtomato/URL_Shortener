@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-import models, schemas
+import models
 
 
 def create_url(short_path: str, full_url: str, db: Session):
