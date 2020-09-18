@@ -1,6 +1,5 @@
 import re
 import hashlib
-import base62
 from urllib.parse import urlparse
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -11,10 +10,11 @@ import crud, models, schemas
 from database import SessionLocal, engine
 models.Base.metadata.create_all(bind=engine)
 
-def short(url):
-    hash = hashlib.md5()
-    hash.update(url.encode("utf8"))
-    return base62.encodebytes(hash.digest()[-6:])
+def encode_url(url):
+    md5 = hashlib.md5()
+    md5.update(url.encode("utf8"))
+    return md5.hexdigest()[:10]
+
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ async def register_url(request: Request, body: schemas.UrlCreate, db: Session = 
     if row:
         return row.short_url
 
-    short_url_path = short(body.url)
+    short_url_path = encode_url(body.url)
     url_parse = urlparse(str(request.url))
     crud.create_url(short_url=short_url_path, origin_url=body.url, db=db)
     short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , short_url_path)
