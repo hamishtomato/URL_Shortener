@@ -1,6 +1,6 @@
 # url_shortener Serive
 
-## Swagger
+## API Swagger
 https://hamish-url-shortener.herokuapp.com/docs#/
 
 ## Deploying to Heroku
