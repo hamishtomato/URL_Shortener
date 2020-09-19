@@ -32,15 +32,18 @@ async def register_short_url(request: Request, body: schemas.UrlCreate, db: Sess
         clicks = crud.update_click(full_url=body.url, db=db)
         short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , row.short_path)
         return {"short_url": short_url, "clicks": clicks}
-    short_url_path = encode_url(body.url)
-    row = crud.create_url(short_path=short_url_path, full_url=body.url, db=db)
-    short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , short_url_path)
-    return {"short_url": short_url, "clicks": row.clicks}
+    else:
+        short_url_path = encode_url(body.url)
+        row = crud.create_url(short_path=short_url_path, full_url=body.url, db=db)
+        short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , short_url_path)
+        return {"short_url": short_url, "clicks": row.clicks}
 
 @app.get("/{short_path}")
 async def redirect_url(short_path, db: Session = Depends(get_db)):
     urls = crud.get_full_url(db, short_path=short_path)
-    crud.update_click(short_path=short_path, db=db)
-    response = RedirectResponse(url=urls.full_url)
-
+    if urls:
+        crud.update_click(short_path=short_path, db=db)
+        response = RedirectResponse(url=urls.full_url)
+    else:
+        raise HTTPException(status_code=404, detail="URL not found")
     return response
