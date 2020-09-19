@@ -4,6 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
+from functools import lru_cache
 
 from . import crud, models, schemas
 from . database import SessionLocal, engine
@@ -40,6 +41,7 @@ async def register_url(request: Request, body: schemas.UrlCreate, db: Session = 
 @app.get("/{short_path}")
 def read_users(short_path, db: Session = Depends(get_db)):
     urls = crud.get_full_url(db, short_path=short_path)
+    crud.update_click(short_path=short_path, db=db)
     response = RedirectResponse(url=urls.full_url)
 
     return response

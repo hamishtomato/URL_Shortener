@@ -16,8 +16,13 @@ def get_full_url(db: Session, short_path: str):
 def get_short_path(db: Session, full_url: str):
     return db.query(models.Url.short_path, models.Url.clicks).filter(models.Url.full_url == full_url).first()
 
-def update_click(db: Session, full_url: str):
-    db.query(models.Url.clicks).filter(models.Url.full_url == full_url).update({'clicks' : models.Url.clicks + 1}, synchronize_session=False)
-    db.commit()
-    row = db.query(models.Url.clicks).filter(models.Url.full_url == full_url).first()
+def update_click(db: Session, full_url='', short_path=''):
+    if full_url:
+        db.query(models.Url.clicks).filter(models.Url.full_url == full_url).update({'clicks' : models.Url.clicks + 1}, synchronize_session=False)
+        db.commit()
+        row = db.query(models.Url.clicks).filter(models.Url.full_url == full_url).first()
+    elif short_path:
+        db.query(models.Url.clicks).filter(models.Url.short_path == short_path).update({'clicks' : models.Url.clicks + 1}, synchronize_session=False)
+        db.commit()
+        row = db.query(models.Url.clicks).filter(models.Url.short_path == short_path).first()
     return row.clicks
