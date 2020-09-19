@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
-import crud, models, schemas
-from database import SessionLocal, engine
+from . import crud, models, schemas
+from . database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
