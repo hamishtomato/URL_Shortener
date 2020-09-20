@@ -21,3 +21,6 @@ virtualenv==16.7.4
 virtualenvwrapper-win==1.2.5
 websockets==8.1
 psycopg2-binary
+pytest==6.0.2
+pytest-html-reporter==0.2.2
+aiofiles==0.5.0
