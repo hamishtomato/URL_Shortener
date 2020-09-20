@@ -3,6 +3,9 @@
 ## API Swagger
 https://hamish-url-shortener.herokuapp.com/docs#/
 
+## Test Report
+https://hamish-url-shortener.herokuapp.com/static/report.html#
+
 ## Deploying to Heroku
 
 ### Step 1
