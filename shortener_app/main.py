@@ -32,9 +32,8 @@ async def register_short_url(request: Request, body: schemas.UrlCreate, db: Sess
     url_parse = urlparse(str(request.url))
     row = crud.get_short_path(db, full_url=body.url)
     if row:
-        clicks = crud.update_click(full_url=body.url, db=db)
         short_url = '{}://{}/{}'.format(url_parse.scheme , url_parse.netloc , row.short_path)
-        return {"short_url": short_url, "clicks": clicks}
+        return {"short_url": short_url, "clicks": row.clicks}
     else:
         short_url_path = encode_url(body.url)
         row = crud.create_url(short_path=short_url_path, full_url=body.url, db=db)
